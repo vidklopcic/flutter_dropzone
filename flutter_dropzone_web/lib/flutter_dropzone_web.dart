@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import 'package:js/js.dart';
@@ -21,9 +20,13 @@ class FlutterDropzoneView {
     container = DivElement()
       ..id = 'dropzone-container-$viewId'
       ..style.pointerEvents = 'auto'
-      ..style.border = 'none';
-    container.children.add(ScriptElement()..innerHtml = dispatchAttachedEventScript(viewId));
-    document.addEventListener(attachedEventType(viewId), (event) {
+      ..style.border = 'none'
+      ..style.animationName =
+          'dropzoneReady' // idea from https://keithclark.co.uk/articles/working-with-elements-before-the-dom-is-ready/
+      ..style.animationDuration = '0.001s';
+    EventListener listener;
+    listener = (event) {
+      container.removeEventListener('animationstart', listener);
       _nativeCreate(
         container,
         allowInterop(_onLoaded),
@@ -35,12 +38,16 @@ class FlutterDropzoneView {
       if (mime != null) setMIME(mime);
       if (operation != null) setOperation(operation);
       if (cursor != null) setCursor(cursor);
-    });
+    };
+    container.addEventListener('animationstart', listener);
+
+    if (!const bool.fromEnvironment('FLUTTER_WEB_USE_SKIA', defaultValue: false))
+      container.append(
+        StyleElement()
+          ..innerText =
+              '@keyframes dropzoneReady {from { clip: rect(1px, auto, auto, auto); } to { clip: rect(0px, auto, auto, auto); }}',
+      );
   }
-
-  String attachedEventType(int id) => 'flutter-dropzone-attached-${id}';
-
-  String dispatchAttachedEventScript(int id) => 'document.dispatchEvent(new CustomEvent("${attachedEventType(id)}"));';
 
   void init(Map<String, dynamic> params) {
     mime = params['mime'];

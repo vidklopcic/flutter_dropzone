@@ -11,8 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_dropzone_platform_interface: ^1.0.3
-  flutter_dropzone_web: ^1.0.9
+  flutter_dropzone_platform_interface:
+    path: /Users/vidklopcic/StudioProjects/flutter_dropzone/flutter_dropzone_platform_interface/
+  flutter_dropzone_web:
+    path: ../flutter_dropzone_web
 
 dev_dependencies:
   flutter_test:
